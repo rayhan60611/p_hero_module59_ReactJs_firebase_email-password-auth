@@ -24,11 +24,9 @@ const Register = () => {
         setSuccess("User Created Successfully");
       })
       .catch((error) => {
-        console.log(error.code);
         setError(
           authErrors[error.code.replace("auth/", "")] || "Something went wrong"
         );
-        console.log(authErrors[error.code]);
       });
   };
 
