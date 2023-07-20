@@ -1,5 +1,9 @@
 import React, { useState } from "react";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+} from "firebase/auth";
 import app from "../firebase.init.js";
 import authErrors from "../../firebase.errorCode.js";
 
@@ -22,6 +26,21 @@ const Register = () => {
         const user = result.user;
         console.log(user);
         setSuccess("User Created Successfully");
+        sendEmailVerifyMail(user.email);
+      })
+      .catch((error) => {
+        setError(
+          authErrors[error.code.replace("auth/", "")] || "Something went wrong"
+        );
+      });
+  };
+
+  const sendEmailVerifyMail = (email) => {
+    sendEmailVerification(auth.currentUser)
+      .then(() => {
+        // Email verification sent!
+        // ...
+        setSuccess("Verify Your Email");
       })
       .catch((error) => {
         setError(

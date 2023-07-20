@@ -1,5 +1,10 @@
-import React, { useState } from "react";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import React, { useRef, useState } from "react";
+import {
+  getAuth,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import app from "../firebase.init";
 import authErrors from "../../firebase.errorCode";
 
@@ -8,6 +13,7 @@ const auth = getAuth(app);
 const Login = () => {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const emailRef = useRef();
 
   const handleOnLoginSubmit = (event) => {
     setError("");
@@ -19,8 +25,12 @@ const Login = () => {
       .then((userCredential) => {
         // Signed in
         const user = userCredential.user;
-        console.log(user);
-        setSuccess("login succcessfull");
+
+        if (user.emailVerified === false) {
+          setError("Please verify your email first");
+        } else {
+          setSuccess("login succcessfull");
+        }
         // ...
       })
       .catch((error) => {
@@ -29,6 +39,24 @@ const Login = () => {
         );
       });
   };
+  // Password reset email sent!
+  const handlePasswordReset = (event) => {
+    event.preventDefault();
+    console.log(emailRef.current.value);
+    const email = emailRef.current.value;
+    sendPasswordResetEmail(auth, email)
+      .then(() => {
+        // Password reset email sent!
+        // ..
+        setSuccess("Check your email");
+      })
+      .catch((error) => {
+        setError(
+          authErrors[error.code.replace("auth/", "")] || "Something went wrong"
+        );
+      });
+  };
+
   return (
     <div className=" h-screen">
       <h1 className="text-center font-bold text-6xl text-success mt-6 mb-24">
@@ -41,6 +69,7 @@ const Login = () => {
         <input
           type="email"
           name="email"
+          ref={emailRef}
           placeholder="Type email here"
           className="input input-bordered input-success w-full max-w-xs"
         />
@@ -50,7 +79,15 @@ const Login = () => {
           placeholder="Type password here"
           className="input input-bordered input-success w-full max-w-xs"
         />
-        <button className="btn btn-success text-white">Login</button>
+        <div className="flex gap-5">
+          <button className="btn btn-success text-white">Login</button>
+          <button
+            onClick={handlePasswordReset}
+            className="btn btn-info text-white"
+          >
+            Reset Password
+          </button>
+        </div>
         <p className="text-error text-xl font bold">{error}</p>
         <p className="text-success text-xl font bold">{success}</p>
       </form>
